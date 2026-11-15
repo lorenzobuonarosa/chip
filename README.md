@@ -52,6 +52,8 @@ Esempi:
 
 Senza `da` e `a` la pagina mostra i primi 10 Paesi per lato (8 sotto i 600 px di larghezza).
 
+**Mobile.** Sotto i 550 px il grafico mantiene una larghezza di 680 px e scorre di lato dentro un riquadro: si parte da «Chi vende» e scorrendo si arriva a «Chi compra». La barra sopra il grafico permette di saltare da un lato all'altro. Soglia e larghezza si cambiano in `CONFIG` (`scrollBreakpoint`, `scrollWidth`) in cima allo script di `index.html`.
+
 **Un solo Paese.** Se su un lato è scelto un solo Paese (per esempio `?a=ITA`), quel lato mostra solo quel Paese, senza «Altri Paesi», e la soglia non si applica, così si vedono anche i flussi piccoli. Se l'altro lato non è stato scelto a mano, mostra i primi 10 partner di quel Paese (8 su mobile), più «Altri Paesi». Esempi: `?a=ITA` (da chi compra l'Italia), `?da=ITA` (a chi vende l'Italia), `?da=ITA&a=DEU` (un solo flusso).
 
 ## Tema

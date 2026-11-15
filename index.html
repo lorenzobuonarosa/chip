@@ -182,7 +182,7 @@
   .chart { position: relative; width: 100%; }
   .chart svg { display: block; width: 100%; overflow: visible; }
 
-  /* Scorrimento orizzontale sotto i 450 px */
+  /* Scorrimento orizzontale sotto i 550 px */
   .chart-wrap { position: relative; }
   .chart.scroll {
     overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain;
@@ -353,7 +353,7 @@
   const CONFIG = {
     dataUrl: 'data.json',
     narrowBreakpoint: 600,
-    scrollBreakpoint: 450,        // sotto questa larghezza il grafico scorre di lato
+    scrollBreakpoint: 550,        // sotto questa larghezza il grafico scorre di lato
     scrollWidth: 680,             // larghezza del grafico in modalità scorrimento
     topWide: 10,
     topNarrow: 8,
@@ -624,7 +624,7 @@
     current = g;
     narrow = window.innerWidth < CONFIG.narrowBreakpoint;
     const scrollMode = window.innerWidth < CONFIG.scrollBreakpoint;
-    const compact = narrow && !scrollMode;   // etichette compatte solo tra 450 e 600 px
+    const compact = narrow && !scrollMode;   // etichette compatte solo tra 550 e 600 px
     const width = scrollMode ? CONFIG.scrollWidth : Math.max(280, chartEl.clientWidth);
     chartEl.classList.toggle('narrow', compact);
     setScrollMode(scrollMode);
