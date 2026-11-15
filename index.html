@@ -1,0 +1,1079 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taiwan vende, la Cina compra</title>
+<meta name="description" content="Importazioni di circuiti integrati nel 2025 per Paese di provenienza e Paese di arrivo. Dati UN Comtrade, HS 8542.">
+<script>
+  /* Tema impostato prima del primo disegno, per evitare lampi di colore.
+     Ordine: ?theme= nell'URL › postMessage dalla pagina ospite › prefers-color-scheme. */
+  (function () {
+    var p = new URLSearchParams(location.search);
+    var t = p.get('theme');
+    if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', t);
+    var bg = p.get('bg');
+    document.documentElement.setAttribute('data-bg', bg === 'transparent' ? 'transparent' : 'solid');
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ------------------------------------------------------------------ TEMI */
+  :root {
+    --bg: #ffffff;
+    --text: #1a1a1a;
+    --text-2: #5c5f62;
+    --grid: #e6e7e8;
+    --border: #d2d4d6;
+    --tooltip-bg: #ffffff;
+    --tooltip-text: #1a1a1a;
+    --tooltip-border: #d2d4d6;
+    --tooltip-shadow: 0 4px 16px rgba(0, 0, 0, .12);
+    --control-bg: #ffffff;
+    --control-hover: #f2f3f4;
+    --control-active: #1a1a1a;
+    --control-active-text: #ffffff;
+    --track-off: #c4c7ca;
+    --focus: #1354d9;
+    --link-op: .45;
+    --link-op-dim: .08;
+    --node-dim: .3;
+
+    --c-TWN: #1354d9;
+    --c-CHN: #de2c35;
+    --c-KOR: #09aa64;
+    --c-HKG: #f54e8b;
+    --c-SGP: #fa6502;
+    --c-MYS: #f2b90f;
+    --c-USA: #132856;
+    --c-JPN: #9852d9;
+    --c-default: #8a8e91;
+    --c-others: #b1b4b8;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --bg: #121212;
+    --text: #f2f2f2;
+    --text-2: #a8abae;
+    --grid: #2c2e30;
+    --border: #3b3e41;
+    --tooltip-bg: #1e1f21;
+    --tooltip-text: #f2f2f2;
+    --tooltip-border: #3b3e41;
+    --tooltip-shadow: 0 4px 16px rgba(0, 0, 0, .5);
+    --control-bg: #1a1b1d;
+    --control-hover: #26282a;
+    --control-active: #f2f2f2;
+    --control-active-text: #121212;
+    --track-off: #4a4d50;
+    --focus: #76b7f7;
+    --link-op: .55;
+    --link-op-dim: .1;
+    --node-dim: .3;
+
+    --c-TWN: #4a82f2;
+    --c-CHN: #f04850;
+    --c-KOR: #14b870;
+    --c-HKG: #f7649a;
+    --c-SGP: #fb7322;
+    --c-MYS: #f2b90f;
+    --c-USA: #76b7f7;
+    --c-JPN: #a66be6;
+    --c-default: #7c8084;
+    --c-others: #a2a5a9;
+    color-scheme: dark;
+  }
+  /* Sfondo scuro trasparente (?bg=transparent o postMessage {background:"transparent"}) */
+  :root[data-theme="dark"][data-bg="transparent"] { --bg: transparent; color-scheme: normal; }
+
+  /* ------------------------------------------------------------------ BASE */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
+  body {
+    color: var(--text);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    font-variant-numeric: tabular-nums;
+  }
+  #app { padding: 16px 16px 12px; max-width: 1100px; margin: 0 auto; }
+  .sr-only {
+    position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  :focus { outline: none; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 2px; }
+
+  h1 { font-size: 22px; line-height: 1.2; font-weight: 700; margin: 0 0 6px; letter-spacing: -.01em; }
+  .sub { margin: 0 0 14px; color: var(--text-2); font-size: 15px; max-width: 62ch; }
+
+  /* -------------------------------------------------------------- CONTROLLI */
+  button, input { font: inherit; color: inherit; }
+  .btn {
+    appearance: none; border: 1px solid var(--border); background: var(--control-bg);
+    border-radius: 4px; padding: 5px 10px; font-size: 13px; font-weight: 500; cursor: pointer;
+    line-height: 1.3; white-space: nowrap;
+  }
+  .btn:hover { background: var(--control-hover); }
+  .btn-ghost { border-color: transparent; background: transparent; padding: 5px 6px; color: var(--text-2); }
+  .btn-ghost:hover { color: var(--text); }
+
+  .filter-toggle { display: none; width: 100%; justify-content: space-between; align-items: center; }
+  .filter-toggle .chev { transition: transform .2s; }
+  .filter-toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
+
+  .controls { border-top: 1px solid var(--grid); border-bottom: 1px solid var(--grid); padding: 10px 0; margin-bottom: 10px; }
+  .pickers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .picker-head {
+    display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 8px;
+    text-align: left; padding: 7px 10px;
+  }
+  .picker-head .lbl { font-weight: 600; }
+  .picker-head .count { color: var(--text-2); font-weight: 400; margin-left: 6px; }
+  .picker-head .chev { transition: transform .2s; flex: none; }
+  .picker-head[aria-expanded="true"] .chev { transform: rotate(180deg); }
+  .picker-body { border: 1px solid var(--border); border-top: 0; border-radius: 0 0 4px 4px; padding: 8px; background: var(--control-bg); }
+  .picker-body[hidden] { display: none; }
+  .picker-tools { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
+  .search {
+    flex: 1 1 140px; min-width: 0; border: 1px solid var(--border); background: var(--bg);
+    border-radius: 4px; padding: 5px 8px; font-size: 13px;
+  }
+  .search::placeholder { color: var(--text-2); }
+  .plist { list-style: none; margin: 0; padding: 0; max-height: 196px; overflow-y: auto; overscroll-behavior: contain; }
+  .plist li label {
+    display: flex; align-items: center; gap: 8px; padding: 3px 4px; border-radius: 3px; cursor: pointer; font-size: 13px;
+  }
+  .plist li label:hover { background: var(--control-hover); }
+  .plist input { margin: 0; accent-color: var(--text); width: 15px; height: 15px; flex: none; }
+  .plist .sw { width: 9px; height: 9px; border-radius: 2px; flex: none; }
+  .plist .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .plist .vl { color: var(--text-2); font-size: 12px; }
+  .plist .empty { color: var(--text-2); font-size: 13px; padding: 4px; }
+
+  .options { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-top: 10px; }
+  .switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; user-select: none; }
+  .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .switch .track {
+    width: 30px; height: 18px; border-radius: 9px; background: var(--track-off); position: relative; flex: none;
+    transition: background .15s;
+  }
+  .switch .track::after {
+    content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%;
+    background: #fff; transition: transform .15s;
+  }
+  .switch input:checked + .track { background: var(--control-active); }
+  .switch input:checked + .track::after { transform: translateX(12px); background: var(--control-active-text); }
+  .switch input:focus-visible + .track { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .slider { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; white-space: nowrap; }
+  .slider input[type=range] { width: 140px; accent-color: var(--text); }
+  .slider output { min-width: 7.5em; color: var(--text-2); }
+  .actions { display: inline-flex; gap: 6px; margin-left: auto; }
+
+  /* ---------------------------------------------------------------- GRAFICO */
+  figure { margin: 0; }
+  .col-heads {
+    display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .04em; color: var(--text-2); margin: 4px 0 6px;
+  }
+  .chart { position: relative; width: 100%; }
+  .chart svg { display: block; width: 100%; overflow: visible; }
+  .empty-msg { padding: 60px 0; text-align: center; color: var(--text-2); }
+
+  .link { fill: none; stroke-opacity: var(--link-op); transition: stroke-opacity .15s; cursor: pointer; }
+  .node rect { transition: opacity .15s; }
+  .node { cursor: pointer; }
+  .lbl text { fill: var(--text); font-size: 12px; transition: opacity .15s; pointer-events: none; }
+  .lbl .ln { font-weight: 600; }
+  .lbl .lv { fill: var(--text-2); font-weight: 400; }
+  .lbl line, .lbl path { stroke: var(--text-2); stroke-width: 1; fill: none; opacity: .6; }
+  .narrow .lbl text { font-size: 11px; }
+
+  svg.focus-on .link { stroke-opacity: var(--link-op-dim); }
+  svg.focus-on .link.on { stroke-opacity: calc(var(--link-op) + .25); }
+  svg.focus-on .node:not(.on) rect { opacity: var(--node-dim); }
+  svg.focus-on .lbl:not(.on) text { opacity: .35; }
+  .node:focus-visible { outline: none; }
+  .node:focus-visible rect { stroke: var(--focus); stroke-width: 3; paint-order: stroke; }
+  .node.pinned rect { stroke: var(--text); stroke-width: 1.5; }
+  .link:focus-visible { outline: none; stroke-opacity: .95 !important; }
+
+  .tooltip {
+    position: fixed; z-index: 10; pointer-events: none; max-width: 280px;
+    background: var(--tooltip-bg); color: var(--tooltip-text); border: 1px solid var(--tooltip-border);
+    box-shadow: var(--tooltip-shadow); border-radius: 4px; padding: 7px 10px; font-size: 13px; line-height: 1.35;
+  }
+  .tooltip[hidden] { display: none; }
+  .tooltip b { font-weight: 600; }
+  .tooltip .tt-sub { color: var(--text-2); font-size: 12px; margin-top: 2px; }
+
+  .panel {
+    border: 1px solid var(--border); border-left: 4px solid var(--panel-c, var(--text)); border-radius: 4px;
+    padding: 10px 12px; margin-top: 10px; background: var(--control-bg);
+  }
+  .panel[hidden] { display: none; }
+  .panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .panel h2 { font-size: 16px; margin: 0; font-weight: 700; }
+  .panel .role { color: var(--text-2); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+  .panel .kpis { display: flex; gap: 22px; margin: 8px 0; flex-wrap: wrap; }
+  .panel .kpi b { display: block; font-size: 20px; font-weight: 700; line-height: 1.15; }
+  .panel .kpi span { color: var(--text-2); font-size: 12px; }
+  .panel table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  .panel caption { text-align: left; font-weight: 600; font-size: 12px; color: var(--text-2); padding-bottom: 4px; }
+  .panel td, .panel th { padding: 3px 0; border-top: 1px solid var(--grid); text-align: left; font-weight: 400; }
+  .panel td.num { text-align: right; white-space: nowrap; padding-left: 10px; }
+  .panel .note { color: var(--text-2); font-size: 12px; margin: 8px 0 0; }
+
+  .excluded { font-size: 13px; color: var(--text-2); margin: 10px 0 0; }
+  .excluded b { color: var(--text); font-weight: 600; }
+
+  footer { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--grid); font-size: 12px; color: var(--text-2); }
+  footer p { margin: 0 0 6px; }
+  footer a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+  footer a:hover { color: var(--text); }
+  .method summary { cursor: pointer; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .method ol { margin: 4px 0 0; padding-left: 18px; }
+  .method li { margin-bottom: 4px; }
+  .copied { font-size: 12px; color: var(--text-2); }
+
+  /* --------------------------------------------------------------- MOBILE */
+  @media (max-width: 599.98px) {
+    #app { padding: 12px 16px 10px; }
+    h1 { font-size: 20px; }
+    .sub { font-size: 14px; }
+    .filter-toggle { display: flex; }
+    .filter-panel { margin-top: 10px; }
+    .filter-panel[hidden] { display: none; }
+    .pickers { grid-template-columns: 1fr; gap: 8px; }
+    .options { flex-direction: column; align-items: flex-start; }
+    .slider input[type=range] { width: 160px; }
+    .actions { margin-left: 0; }
+  }
+  @media (min-width: 600px) {
+    .filter-panel[hidden] { display: block; } /* su desktop i filtri sono sempre visibili */
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<main id="app">
+  <header>
+    <h1 id="title">Taiwan vende, la Cina compra</h1>
+    <p class="sub" id="subtitle">Importazioni di circuiti integrati nel 2025 per Paese di provenienza e Paese di arrivo, in miliardi di dollari</p>
+  </header>
+
+  <section class="controls" aria-label="Filtri del grafico">
+    <button type="button" class="btn filter-toggle" id="filterToggle" aria-expanded="false" aria-controls="filterPanel">
+      <span>Filtra Paesi <span class="count" id="filterSummary"></span></span>
+      <svg class="chev" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+    </button>
+    <div class="filter-panel" id="filterPanel">
+      <div class="pickers">
+        <div class="picker" id="pickO"></div>
+        <div class="picker" id="pickD"></div>
+      </div>
+      <div class="options">
+        <label class="switch"><input type="checkbox" role="switch" id="optOthers" checked><span class="track"></span>Mostra «Altri Paesi»</label>
+        <label class="switch"><input type="checkbox" role="switch" id="optHK"><span class="track"></span>Unisci Hong Kong alla Cina</label>
+        <label class="switch"><input type="checkbox" role="switch" id="optCC"><span class="track"></span>Nascondi il flusso Cina → Cina</label>
+        <span class="slider">
+          <label for="optThr">Soglia minima</label>
+          <input type="range" id="optThr" min="0" max="10" step="0.5" value="1" aria-describedby="thrOut">
+          <output id="thrOut" for="optThr"></output>
+        </span>
+        <span class="actions">
+          <button type="button" class="btn" id="btnReset">Ripristina</button>
+          <button type="button" class="btn btn-ghost" id="btnCopy">Copia link</button>
+          <span class="copied" id="copied" role="status" aria-live="polite"></span>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <figure aria-labelledby="title">
+    <div class="col-heads" aria-hidden="true"><span>Chi vende</span><span>Chi compra</span></div>
+    <div class="chart" id="chart"></div>
+    <p id="summary" class="sr-only"></p>
+    <section class="panel" id="panel" hidden aria-live="polite" aria-label="Dettagli del Paese selezionato"></section>
+  </figure>
+
+  <p class="excluded" id="excluded"></p>
+
+  <footer>
+    <p>Fonte: <a href="https://comtradeplus.un.org/TradeFlow" target="_blank" rel="noopener">UN Comtrade, codice HS 8542, dati 2025</a></p>
+    <details class="method">
+      <summary>Nota metodologica</summary>
+      <ol>
+        <li>I flussi sono ricostruiti dalle <b>importazioni dichiarate</b> (dati «mirror»): ogni valore va dal Paese d'origine al Paese che importa. Il metodo serve perché Taiwan non dichiara a Comtrade e compare solo come partner, con il codice «Other Asia, nes».</li>
+        <li><b>Taiwan e Vietnam</b> non risultano tra i Paesi dichiaranti per il 2025: compaiono come Paesi che vendono, non come Paesi che comprano.</li>
+        <li><b>Hong Kong</b> è soprattutto un porto da cui i chip ripartono verso la Cina continentale: l'interruttore «Unisci Hong Kong alla Cina» somma i due territori. Con l'unione, i flussi tra Cina e Hong Kong diventano flussi interni alla Cina.</li>
+        <li>Il flusso <b>Cina → Cina</b> (circa 57 miliardi di dollari) riguarda chip prodotti in Cina e reimportati, per esempio dopo il confezionamento all'estero o il passaggio nelle zone franche. Si può nascondere con l'interruttore.</li>
+      </ol>
+      <p>I flussi sotto la soglia scelta sono esclusi dal grafico; i Paesi non selezionati confluiscono in «Altri Paesi». Valori in miliardi di dollari correnti; le percentuali sono calcolate sul totale delle importazioni bilaterali con le impostazioni correnti.</p>
+    </details>
+  </footer>
+</main>
+<div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ================================================================ CONFIG */
+  const CONFIG = {
+    dataUrl: 'data.json',
+    narrowBreakpoint: 600,
+    topWide: 10,
+    topNarrow: 8,
+    defaultThreshold: 1,          // miliardi di dollari
+    transitionMs: 400,
+    darkBackground: 'solid',      // 'solid' (#121212) o 'transparent'; sovrascrivibile con ?bg=
+    messageSource: 'qn-radar-chip'
+  };
+  const COLORED = ['TWN', 'CHN', 'KOR', 'HKG', 'SGP', 'MYS', 'USA', 'JPN'];
+  const OTH = 'OTH';
+  const reduceMotionMQ = matchMedia('(prefers-reduced-motion: reduce)');
+
+  /* ============================================================== FORMATI */
+  const nf1 = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1, useGrouping: 'always' });
+  const bn = v => nf1.format(v / 1e9);
+  const pct = (v, tot) => nf1.format(tot > 0 ? (v / tot) * 100 : 0) + '%';
+  const bnLong = v => bn(v) + ' miliardi di dollari';
+
+  /* ================================================================ TEMA */
+  const root = document.documentElement;
+  const params = new URLSearchParams(location.search);
+  const urlTheme = ['light', 'dark'].includes(params.get('theme')) ? params.get('theme') : null;
+  const urlBg = ['solid', 'transparent'].includes(params.get('bg')) ? params.get('bg') : null;
+  let msgTheme = null, msgBg = null;
+  const darkMQ = matchMedia('(prefers-color-scheme: dark)');
+
+  function applyTheme() {
+    const theme = urlTheme || msgTheme || (darkMQ.matches ? 'dark' : 'light');
+    root.setAttribute('data-theme', theme);
+    root.setAttribute('data-bg', urlBg || msgBg || CONFIG.darkBackground);
+  }
+  darkMQ.addEventListener('change', applyTheme);
+  window.addEventListener('message', e => {
+    const d = e.data;
+    if (!d || typeof d !== 'object' || d.type !== 'theme') return;
+    if (d.value === 'light' || d.value === 'dark') msgTheme = d.value;
+    else if (d.value === 'auto' || d.value == null) msgTheme = null;
+    if (d.background === 'solid' || d.background === 'transparent') msgBg = d.background;
+    applyTheme();
+  });
+  applyTheme();
+
+  /* ===================================================== ALTEZZA → OSPITE */
+  const inIframe = window.parent !== window;
+  function post(msg) { if (inIframe) window.parent.postMessage(Object.assign({ source: CONFIG.messageSource }, msg), '*'); }
+  let lastHeight = 0;
+  function postHeight() {
+    const h = Math.ceil(document.getElementById('app').getBoundingClientRect().height);
+    if (h !== lastHeight) { lastHeight = h; post({ type: 'resize', height: h }); }
+  }
+  new ResizeObserver(postHeight).observe(document.getElementById('app'));
+  post({ type: 'ready' });
+
+  /* ================================================================ STATO */
+  let DATA, COUNTRIES;
+  const state = {
+    selO: new Set(), selD: new Set(),
+    defaultSel: true,         // la selezione segue ancora i "primi N"
+    others: true, hk: false, hideCC: false,
+    threshold: CONFIG.defaultThreshold,
+    hover: null, pinned: null, hoverLink: null
+  };
+  let narrow = window.innerWidth < CONFIG.narrowBreakpoint;
+  const topN = () => (narrow ? CONFIG.topNarrow : CONFIG.topWide);
+
+  /* ========================================================= DATI DI BASE */
+  const baseCache = new Map();
+  // Flussi con le opzioni Hong Kong / Cina→Cina applicate, e totali per lato.
+  function base() {
+    const key = state.hk + '|' + state.hideCC;
+    if (baseCache.has(key)) return baseCache.get(key);
+    const m = new Map();
+    for (const [o0, d0, v] of DATA.flows) {
+      let o = o0, d = d0;
+      if (state.hk) { if (o === 'HKG') o = 'CHN'; if (d === 'HKG') d = 'CHN'; }
+      if (state.hideCC && o === 'CHN' && d === 'CHN') continue;
+      const k = o + '|' + d;
+      m.set(k, (m.get(k) || 0) + v);
+    }
+    const flows = [], byO = new Map(), byD = new Map();
+    let total = 0;
+    for (const [k, v] of m) {
+      const [o, d] = k.split('|');
+      flows.push({ o, d, v });
+      byO.set(o, (byO.get(o) || 0) + v);
+      byD.set(d, (byD.get(d) || 0) + v);
+      total += v;
+    }
+    const rank = mp => [...mp].filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]).map(x => x[0]);
+    const res = { flows, byO, byD, total, rankO: rank(byO), rankD: rank(byD) };
+    baseCache.set(key, res);
+    return res;
+  }
+
+  function nameOf(code) {
+    if (code === OTH) return 'Altri Paesi';
+    if (code === 'CHN' && state.hk) return 'Cina e Hong Kong';
+    return COUNTRIES[code] ? COUNTRIES[code].name : code;
+  }
+  const colorVar = code => code === OTH ? 'var(--c-others)' : (COLORED.includes(code) ? `var(--c-${code})` : 'var(--c-default)');
+
+  // Selezione effettiva (con Hong Kong unita alla Cina, HKG → CHN)
+  function eff(set) {
+    if (!state.hk) return set;
+    const s = new Set(set);
+    if (s.has('HKG')) { s.delete('HKG'); s.add('CHN'); }
+    return s;
+  }
+
+  function setDefaultSelection() {
+    const b = base();
+    state.selO = new Set(b.rankO.slice(0, topN()));
+    state.selD = new Set(b.rankD.slice(0, topN()));
+    state.defaultSel = true;
+  }
+
+  /* ========================================================== GRAFO SANKEY */
+  function buildGraph() {
+    const b = base();
+    const sO = eff(state.selO), sD = eff(state.selD);
+    const thr = state.threshold * 1e9;
+    const agg = new Map();
+    let nonSelected = 0, below = 0;
+    for (const f of b.flows) {
+      const o = sO.has(f.o) ? f.o : (state.others ? OTH : null);
+      const d = sD.has(f.d) ? f.d : (state.others ? OTH : null);
+      if (!o || !d) { nonSelected += f.v; continue; }
+      const k = o + '|' + d;
+      agg.set(k, (agg.get(k) || 0) + f.v);
+    }
+    const links = [];
+    for (const [k, v] of agg) {
+      if (v < thr || v <= 0) { below += v; continue; }
+      const [o, d] = k.split('|');
+      links.push({ source: 'o:' + o, target: 'd:' + d, o, d, value: v, id: o + '>' + d });
+    }
+    const ids = new Set();
+    links.forEach(l => { ids.add(l.source); ids.add(l.target); });
+    const nodes = [...ids].map(id => {
+      const side = id[0], code = id.slice(2);
+      return { id, side, code, name: nameOf(code), isOther: code === OTH };
+    });
+    const shown = links.reduce((s, l) => s + l.value, 0);
+    return { nodes, links, nonSelected, below, shown, total: b.total, sO, sD };
+  }
+
+  /* ======================================================== MISURA TESTO */
+  const measureCtx = document.createElement('canvas').getContext('2d');
+  function textW(str, weight, size) {
+    measureCtx.font = `${weight} ${size}px Inter, -apple-system, Segoe UI, Roboto, Arial, sans-serif`;
+    return measureCtx.measureText(str).width;
+  }
+  function truncate(str, maxW, weight, size) {
+    if (textW(str, weight, size) <= maxW) return str;
+    let s = str;
+    while (s.length > 1 && textW(s + '…', weight, size) > maxW) s = s.slice(0, -1);
+    return s.trimEnd() + '…';
+  }
+
+  // Disposizione verticale delle etichette senza sovrapposizioni.
+  // Se non c'è spazio per tutte, nasconde le più piccole (restano in tooltip e aria-label).
+  function placeLabels(items, top, bottom, lh) {
+    let vis = items.slice().sort((a, b) => a.want - b.want);
+    items.forEach(it => { it.hidden = false; });
+    while (vis.length * lh > bottom - top && vis.length) {
+      let mi = 0;
+      vis.forEach((it, i) => { if (it.value < vis[mi].value) mi = i; });
+      vis[mi].hidden = true;
+      vis.splice(mi, 1);
+    }
+    let prev = -Infinity;
+    vis.forEach(it => { it.y = Math.max(it.want, prev + lh, top + lh / 2); prev = it.y; });
+    let next = Infinity;
+    for (let i = vis.length - 1; i >= 0; i--) {
+      vis[i].y = Math.min(vis[i].y, next - lh, bottom - lh / 2);
+      next = vis[i].y;
+    }
+  }
+
+  /* ============================================================== RENDER */
+  const chartEl = document.getElementById('chart');
+  const tooltip = document.getElementById('tooltip');
+  let svg, gLinks, gNodes, gLabels, current = null;
+
+  function initSvg() {
+    svg = d3.select(chartEl).append('svg')
+      .attr('role', 'group')
+      .attr('aria-labelledby', 'title')
+      .attr('aria-describedby', 'summary');
+    gNodes = svg.append('g').attr('class', 'nodes').attr('aria-label', 'Paesi');
+    gLinks = svg.append('g').attr('class', 'links').attr('aria-label', 'Flussi');
+    gLabels = svg.append('g').attr('class', 'labels').attr('aria-hidden', 'true');
+  }
+
+  function render(animate) {
+    const g = buildGraph();
+    current = g;
+    const width = Math.max(280, chartEl.clientWidth);
+    narrow = window.innerWidth < CONFIG.narrowBreakpoint;
+    chartEl.classList.toggle('narrow', narrow);
+    const dur = animate && !reduceMotionMQ.matches ? CONFIG.transitionMs : 0;
+
+    const empty = chartEl.querySelector('.empty-msg');
+    if (!g.links.length) {
+      svg.style('display', 'none');
+      if (!empty) chartEl.insertAdjacentHTML('beforeend', '<p class="empty-msg">Nessun flusso da mostrare con questa selezione. Prova ad abbassare la soglia o a mostrare «Altri Paesi».</p>');
+      updateTexts(g);
+      updatePanel();
+      return;
+    }
+    if (empty) empty.remove();
+    svg.style('display', null);
+
+    // --- etichette e margini
+    const fs = narrow ? 11 : 12, lh = narrow ? 14 : 16, gap = 6, leader = 6;
+    const nodeW = narrow ? 8 : 10;
+    const maxSide = width * (narrow ? 0.33 : 0.28);
+    const valueOf = n => g.links.reduce((s, l) => s + (l.source === n.id || l.target === n.id ? l.value : 0), 0);
+    g.nodes.forEach(n => { n.total = valueOf(n); n.vtxt = nf1.format(n.total / 1e9); });
+    function sideMargin(side) {
+      let need = 0;
+      g.nodes.filter(n => n.side === side).forEach(n => {
+        const w = textW(n.name, 600, fs) + textW(' ' + n.vtxt, 400, fs);
+        need = Math.max(need, w);
+      });
+      return Math.min(need, maxSide) + gap + leader;
+    }
+    const mL = sideMargin('o'), mR = sideMargin('d');
+    const avail = mL - gap - leader, availR = mR - gap - leader;
+    g.nodes.forEach(n => {
+      const space = n.side === 'o' ? avail : availR;
+      const vW = textW(' ' + n.vtxt, 400, fs);
+      const nameW = textW(n.name, 600, fs);
+      if (nameW + vW <= space) { n.lname = n.name; n.lval = ' ' + n.vtxt; }
+      else if (narrow) { n.lname = truncate(n.name, space, 600, fs); n.lval = ''; }          // il valore va nel tooltip
+      else { n.lname = truncate(n.name, space - vW, 600, fs); n.lval = ' ' + n.vtxt; }
+    });
+
+    // --- altezza
+    const nL = g.nodes.filter(n => n.side === 'o').length;
+    const nR = g.nodes.filter(n => n.side === 'd').length;
+    const baseH = narrow ? 440 : 520;
+    const height = Math.round(Math.min(1800, Math.max(baseH, Math.max(nL, nR) * (lh + 4) + 20)));
+    svg.attr('viewBox', `0 0 ${width} ${height}`).attr('height', height);
+
+    const sankey = d3.sankey()
+      .nodeId(d => d.id)
+      .nodeAlign(d3.sankeyJustify)
+      .nodeWidth(nodeW)
+      .nodePadding(narrow ? 6 : 8)
+      .nodeSort((a, b) => (a.isOther - b.isOther) || (b.value - a.value))
+      .extent([[mL, 2], [width - mR, height - 2]]);
+    const graph = sankey({
+      nodes: g.nodes.map(d => Object.assign({}, d)),
+      links: g.links.map(d => Object.assign({}, d))
+    });
+    g.graph = graph;
+    const byId = new Map(graph.nodes.map(n => [n.id, n]));
+
+    // --- posizione etichette
+    ['o', 'd'].forEach(side => {
+      const items = graph.nodes.filter(n => n.side === side).map(n => ({ n, want: (n.y0 + n.y1) / 2, value: n.value }));
+      placeLabels(items, 0, height, lh);
+      items.forEach(it => { it.n.ly = it.y; it.n.lhidden = it.hidden; });
+    });
+
+    const pathGen = d3.sankeyLinkHorizontal();
+    const t = svg.transition().duration(dur).ease(d3.easeCubicOut);
+
+    // --- nodi
+    const nodeSel = gNodes.selectAll('g.node').data(graph.nodes, d => d.id);
+    nodeSel.exit().transition(t).style('opacity', 0).remove();
+    const nodeEnter = nodeSel.enter().append('g')
+      .attr('class', 'node')
+      .attr('tabindex', 0)
+      .attr('role', 'button')
+      .style('opacity', 0);
+    nodeEnter.append('rect')
+      .attr('x', d => d.x0).attr('y', d => d.y0)
+      .attr('width', d => d.x1 - d.x0).attr('height', d => Math.max(1, d.y1 - d.y0));
+    nodeEnter.on('pointerenter', (e, d) => { state.hover = d.id; highlight(); showNodeTip(e, d); })
+      .on('pointermove', (e, d) => { if (e.pointerType === 'mouse') showNodeTip(e, d); })
+      .on('pointerleave', () => { state.hover = null; highlight(); hideTip(); })
+      .on('click', (e, d) => { e.stopPropagation(); togglePin(d.id); if (lastPointer === 'touch') showNodeTip(e, d); })
+      .on('focus', (e, d) => { state.hover = d.id; highlight(); showNodeTip(null, d, e.currentTarget); })
+      .on('blur', () => { state.hover = null; highlight(); hideTip(); })
+      .on('keydown', onNodeKey);
+    const nodeAll = nodeEnter.merge(nodeSel);
+    nodeAll.order();
+    nodeAll.attr('aria-label', d => nodeAria(d))
+      .attr('aria-pressed', d => String(state.pinned === d.id));
+    nodeAll.select('rect').style('fill', d => colorVar(d.code));
+    nodeAll.transition(t).style('opacity', 1);
+    nodeAll.select('rect').transition(t)
+      .attr('x', d => d.x0).attr('y', d => d.y0)
+      .attr('width', d => d.x1 - d.x0).attr('height', d => Math.max(1, d.y1 - d.y0));
+
+    // --- flussi
+    const linkSel = gLinks.selectAll('path.link').data(graph.links, d => d.id);
+    linkSel.exit().transition(t).style('opacity', 0).remove();
+    const linkEnter = linkSel.enter().append('path')
+      .attr('class', 'link')
+      .attr('tabindex', -1)
+      .attr('role', 'img')
+      .attr('d', pathGen)
+      .attr('stroke-width', d => Math.max(1, d.width))
+      .style('opacity', 0);
+    linkEnter.on('pointerenter', (e, d) => { state.hoverLink = d.id; highlight(); showLinkTip(e, d); })
+      .on('pointermove', (e, d) => showLinkTip(e, d))
+      .on('pointerleave', () => { state.hoverLink = null; highlight(); if (lastPointer !== 'touch') hideTip(); })
+      .on('click', (e, d) => { e.stopPropagation(); showLinkTip(e, d); })
+      .on('focus', (e, d) => { state.hoverLink = d.id; highlight(); showLinkTip(null, d, e.currentTarget); })
+      .on('blur', () => { state.hoverLink = null; highlight(); hideTip(); });
+    const linkAll = linkEnter.merge(linkSel);
+    // ordine: flussi più grandi sotto, più piccoli sopra (più facili da puntare)
+    linkAll.sort((a, b) => b.value - a.value);
+    linkAll.style('stroke', d => colorVar(d.o))
+      .attr('aria-label', d => linkText(d));
+    linkAll.transition(t).style('opacity', 1)
+      .attr('d', pathGen)
+      .attr('stroke-width', d => Math.max(1, d.width));
+
+    // --- etichette
+    const lblSel = gLabels.selectAll('g.lbl').data(graph.nodes, d => d.id);
+    lblSel.exit().transition(t).style('opacity', 0).remove();
+    const lblEnter = lblSel.enter().append('g').attr('class', 'lbl').style('opacity', 0);
+    lblEnter.append('path');
+    const te = lblEnter.append('text').attr('dy', '0.35em');
+    te.append('tspan').attr('class', 'ln');
+    te.append('tspan').attr('class', 'lv');
+    lblEnter.select('text')
+      .attr('x', d => d.side === 'o' ? d.x0 - gap - leader : d.x1 + gap + leader)
+      .attr('y', d => d.ly);
+    const lblAll = lblEnter.merge(lblSel);
+    lblAll.select('text').attr('text-anchor', d => d.side === 'o' ? 'end' : 'start');
+    lblAll.select('.ln').text(d => d.lname);
+    lblAll.select('.lv').text(d => d.lval);
+    lblAll.transition(t).style('opacity', d => d.lhidden ? 0 : 1);
+    lblAll.select('text').transition(t)
+      .attr('x', d => d.side === 'o' ? d.x0 - gap - leader : d.x1 + gap + leader)
+      .attr('y', d => d.ly);
+    lblAll.select('path').transition(t).attr('d', d => {
+      const cy = (d.y0 + d.y1) / 2;
+      const x0 = d.side === 'o' ? d.x0 - 2 : d.x1 + 2;
+      const x1 = d.side === 'o' ? d.x0 - gap - leader + 3 : d.x1 + gap + leader - 3;
+      return Math.abs(d.ly - cy) > 2 ? `M${x0},${cy}L${x1},${d.ly}` : `M${x0},${cy}L${x0},${cy}`;
+    });
+
+    highlight();
+    updateTexts(g);
+    updatePanel();
+  }
+
+  /* ======================================================== TESTI E A11Y */
+  function nodeTotalBase(d) {
+    // totale "vero" del nodo (prima di soglia e selezione), sul lato corrispondente
+    const b = base();
+    const members = membersOf(d);
+    const mp = d.side === 'o' ? b.byO : b.byD;
+    return members.reduce((s, c) => s + (mp.get(c) || 0), 0);
+  }
+  function membersOf(d) {
+    if (d.code !== OTH) return [d.code];
+    const b = base();
+    const sel = d.side === 'o' ? current.sO : current.sD;
+    return (d.side === 'o' ? b.rankO : b.rankD).filter(c => !sel.has(c));
+  }
+  function nodeAria(d) {
+    const role = d.side === 'o' ? 'chi vende' : 'chi compra';
+    return `${d.name}, ${role}: ${bnLong(d.value)} nel grafico. Invio per i dettagli.`;
+  }
+  function linkText(d) {
+    return `${nameOf(d.o)} → ${nameOf(d.d)}: ${bnLong(d.value)} (${pct(d.value, current.total)} del totale)`;
+  }
+
+  function updateTexts(g) {
+    document.getElementById('thrOut').textContent = nf1.format(state.threshold) + ' mld $';
+    const ex = document.getElementById('excluded');
+    const parts = [];
+    parts.push(`Flussi sotto la soglia di ${nf1.format(state.threshold)} miliardi esclusi dal grafico: <b>${bn(g.below)} miliardi di dollari</b> (${pct(g.below, g.total)} del totale).`);
+    if (!state.others && g.nonSelected > 0) parts.push(`Scambi con Paesi non selezionati, non mostrati: <b>${bn(g.nonSelected)} miliardi</b> (${pct(g.nonSelected, g.total)}).`);
+    parts.push(`Nel grafico: ${bn(g.shown)} miliardi su ${bn(g.total)}${state.hideCC ? ' (escluso il flusso Cina → Cina)' : ''}.`);
+    ex.innerHTML = parts.join(' ');
+
+    // riassunto testuale per i lettori di schermo
+    const s = document.getElementById('summary');
+    if (!g.links.length) { s.textContent = 'Il grafico è vuoto con la selezione corrente.'; return; }
+    const L = g.graph.nodes.filter(n => n.side === 'o').sort((a, b) => b.value - a.value);
+    const R = g.graph.nodes.filter(n => n.side === 'd').sort((a, b) => b.value - a.value);
+    const top = g.graph.links.slice().sort((a, b) => b.value - a.value)[0];
+    s.textContent = `Diagramma di Sankey con ${g.links.length} flussi tra ${L.length} Paesi che vendono e ${R.length} Paesi che comprano, ` +
+      `per ${bnLong(g.shown)}, il ${pct(g.shown, g.total)} delle importazioni mondiali di circuiti integrati nel 2025. ` +
+      `Il primo venditore nel grafico è ${L[0].name} con ${bn(L[0].value)} miliardi, il primo acquirente è ${R[0].name} con ${bn(R[0].value)} miliardi. ` +
+      `Il flusso maggiore è ${linkText(top)}.`;
+
+    document.getElementById('filterSummary').textContent =
+      `(${eff(state.selO).size} → ${eff(state.selD).size})`;
+  }
+
+  /* ============================================================ TOOLTIP */
+  let lastPointer = 'mouse';
+  window.addEventListener('pointerdown', e => { lastPointer = e.pointerType; }, true);
+
+  function placeTip(e, el) {
+    tooltip.hidden = false;
+    let x, y;
+    if (e && e.clientX != null) { x = e.clientX; y = e.clientY; }
+    else if (el) { const r = el.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top + r.height / 2; }
+    const tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
+    const vw = document.documentElement.clientWidth, vh = window.innerHeight;
+    let left = x + 14, top = y + 14;
+    if (left + tw > vw - 8) left = Math.max(8, x - tw - 14);
+    if (top + th > vh - 8) top = Math.max(8, y - th - 14);
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+  }
+  function showLinkTip(e, d) {
+    tooltip.innerHTML = `<b>${esc(nameOf(d.o))} → ${esc(nameOf(d.d))}</b>: ${bnLong(d.value)} <span class="tt-sub">(${pct(d.value, current.total)} del totale)</span>`;
+    placeTip(e, e ? null : arguments[2]);
+  }
+  function showNodeTip(e, d, el) {
+    const full = nodeTotalBase(d);
+    const verb = d.side === 'o' ? 'vende' : 'compra';
+    let html = `<b>${esc(d.name)}</b> ${verb} ${bnLong(full)}<div class="tt-sub">${pct(full, current.total)} del totale mondiale`;
+    if (Math.abs(full - d.value) > 5e7) html += ` · nel grafico ${bn(d.value)} miliardi`;
+    html += `</div>`;
+    tooltip.innerHTML = html;
+    placeTip(e, el || (e && e.currentTarget));
+  }
+  function hideTip() { tooltip.hidden = true; }
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+  /* ============================================= EVIDENZIAZIONE E PANNELLO */
+  function highlight() {
+    if (!svg || !current || !current.graph) return;
+    const active = state.pinned || state.hover;
+    const lk = state.hoverLink;
+    const focusOn = !!(active || lk);
+    svg.classed('focus-on', focusOn);
+    const onNodes = new Set();
+    gLinks.selectAll('path.link').each(function (d) {
+      let on = false;
+      if (lk) on = d.id === lk;
+      else if (active) on = d.source.id === active || d.target.id === active;
+      if (on) { onNodes.add(d.source.id); onNodes.add(d.target.id); }
+      this.classList.toggle('on', on);
+      // i flussi del Paese fissato entrano nell'ordine di tabulazione
+      this.setAttribute('tabindex', state.pinned && (d.source.id === state.pinned || d.target.id === state.pinned) ? 0 : -1);
+    });
+    if (active) onNodes.add(active);
+    gNodes.selectAll('g.node').each(function (d) {
+      this.classList.toggle('on', onNodes.has(d.id));
+      this.classList.toggle('pinned', state.pinned === d.id);
+      this.setAttribute('aria-pressed', String(state.pinned === d.id));
+    });
+    gLabels.selectAll('g.lbl').each(function (d) { this.classList.toggle('on', onNodes.has(d.id)); });
+  }
+
+  function togglePin(id) {
+    state.pinned = state.pinned === id ? null : id;
+    highlight();
+    updatePanel();
+  }
+
+  const panel = document.getElementById('panel');
+  function updatePanel() {
+    const node = state.pinned && current && current.graph ? current.graph.nodes.find(n => n.id === state.pinned) : null;
+    if (!node) { state.pinned = null; panel.hidden = true; panel.innerHTML = ''; postHeight(); return; }
+    const b = base();
+    const members = new Set(membersOf(node));
+    const total = nodeTotalBase(node);
+    const partners = new Map();
+    for (const f of b.flows) {
+      const mine = node.side === 'o' ? f.o : f.d;
+      if (!members.has(mine)) continue;
+      const other = node.side === 'o' ? f.d : f.o;
+      partners.set(other, (partners.get(other) || 0) + f.v);
+    }
+    const top5 = [...partners].sort((a, c) => c[1] - a[1]).slice(0, 5);
+    const role = node.side === 'o' ? 'Chi vende' : 'Chi compra';
+    const capt = node.side === 'o' ? 'Primi cinque Paesi acquirenti' : 'Primi cinque Paesi fornitori';
+    const extra = node.isOther ? `<p class="note">${members.size} Paesi e aree non selezionati.</p>` : '';
+    panel.style.setProperty('--panel-c', colorVar(node.code));
+    panel.innerHTML = `
+      <div class="panel-head">
+        <div><div class="role">${role}</div><h2>${esc(node.name)}</h2></div>
+        <button type="button" class="btn btn-ghost" id="panelClose" aria-label="Chiudi i dettagli">✕</button>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><b>${bn(total)}</b><span>miliardi di dollari</span></div>
+        <div class="kpi"><b>${pct(total, b.total)}</b><span>quota sul mondo</span></div>
+      </div>
+      <table><caption>${capt}</caption><tbody>
+        ${top5.map(([c, v]) => `<tr><td>${esc(nameOf(c))}</td><td class="num">${bn(v)} mld</td><td class="num">${pct(v, total)}</td></tr>`).join('')}
+      </tbody></table>
+      ${extra}
+      <p class="note">Un secondo clic sul Paese o il tasto Esc chiudono il pannello.</p>`;
+    panel.hidden = false;
+    document.getElementById('panelClose').addEventListener('click', () => togglePin(node.id));
+    postHeight();
+  }
+
+  /* ============================================================ TASTIERA */
+  function onNodeKey(e, d) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePin(d.id); return; }
+    const arrows = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+    if (!arrows.includes(e.key)) return;
+    e.preventDefault();
+    const nodes = current.graph.nodes;
+    const col = side => nodes.filter(n => n.side === side).sort((a, b) => a.y0 - b.y0);
+    let target;
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      const c = col(d.side), i = c.findIndex(n => n.id === d.id);
+      target = c[Math.max(0, Math.min(c.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1)))];
+    } else {
+      const other = col(d.side === 'o' ? 'd' : 'o');
+      const cy = (d.y0 + d.y1) / 2;
+      target = other.reduce((best, n) => !best || Math.abs((n.y0 + n.y1) / 2 - cy) < Math.abs((best.y0 + best.y1) / 2 - cy) ? n : best, null);
+    }
+    if (target) gNodes.selectAll('g.node').filter(n => n.id === target.id).node().focus();
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (state.pinned) togglePin(state.pinned);
+      hideTip();
+    }
+  });
+  document.addEventListener('click', () => {
+    hideTip();
+    if (lastPointer === 'touch' && state.hoverLink) { state.hoverLink = null; highlight(); }
+  });
+
+  /* ============================================================ SELETTORI */
+  function buildPicker(el, side) {
+    const label = side === 'o' ? 'Chi vende' : 'Chi compra';
+    const id = 'pk-' + side;
+    el.innerHTML = `
+      <button type="button" class="btn picker-head" aria-expanded="false" aria-controls="${id}-body">
+        <span><span class="lbl">${label}</span><span class="count"></span></span>
+        <svg class="chev" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+      </button>
+      <div class="picker-body" id="${id}-body" hidden>
+        <div class="picker-tools">
+          <input type="search" class="search" placeholder="Cerca un Paese" aria-label="Cerca tra i Paesi: ${label.toLowerCase()}">
+          <button type="button" class="btn" data-act="top"></button>
+          <button type="button" class="btn" data-act="all">Tutti</button>
+          <button type="button" class="btn" data-act="none">Azzera</button>
+        </div>
+        <ul class="plist" role="group" aria-label="Paesi: ${label.toLowerCase()}, ordinati per valore"></ul>
+      </div>`;
+    const head = el.querySelector('.picker-head');
+    const body = el.querySelector('.picker-body');
+    const search = el.querySelector('.search');
+    const list = el.querySelector('.plist');
+    head.addEventListener('click', () => {
+      const open = head.getAttribute('aria-expanded') !== 'true';
+      head.setAttribute('aria-expanded', String(open));
+      body.hidden = !open;
+      if (open) fillList();
+      postHeight();
+    });
+    search.addEventListener('input', fillList);
+    el.querySelectorAll('[data-act]').forEach(btn => btn.addEventListener('click', () => {
+      const b = base();
+      const rank = side === 'o' ? b.rankO : b.rankD;
+      const act = btn.dataset.act;
+      const sel = act === 'top' ? new Set(rank.slice(0, topN())) : act === 'all' ? new Set(rank) : new Set();
+      if (side === 'o') state.selO = sel; else state.selD = sel;
+      state.defaultSel = false;
+      if (state.hk) syncHK();
+      changed();
+    }));
+    list.addEventListener('change', e => {
+      const cb = e.target;
+      if (!cb.matches('input[type=checkbox]')) return;
+      const set = side === 'o' ? state.selO : state.selD;
+      const codes = cb.value === 'CHN' && state.hk ? ['CHN', 'HKG'] : [cb.value];
+      codes.forEach(c => cb.checked ? set.add(c) : set.delete(c));
+      state.defaultSel = false;
+      changed(true);
+    });
+
+    function fillList() {
+      if (body.hidden) return;
+      const b = base();
+      const rank = side === 'o' ? b.rankO : b.rankD;
+      const mp = side === 'o' ? b.byO : b.byD;
+      const sel = eff(side === 'o' ? state.selO : state.selD);
+      const q = search.value.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+      const items = rank.filter(c => !q || nameOf(c).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes(q) || c.toLowerCase() === q);
+      list.innerHTML = items.length ? items.map(c => `
+        <li><label><input type="checkbox" value="${c}" ${sel.has(c) ? 'checked' : ''}>
+          <span class="sw" style="background:${colorVar(c)}" aria-hidden="true"></span>
+          <span class="nm">${esc(nameOf(c))}</span><span class="vl">${bn(mp.get(c))}</span></label></li>`).join('')
+        : '<li class="empty">Nessun Paese trovato</li>';
+    }
+    function refresh() {
+      el.querySelector('.count').textContent = ` · ${eff(side === 'o' ? state.selO : state.selD).size} Paesi`;
+      el.querySelector('[data-act=top]').textContent = `Primi ${topN()}`;
+      fillList();
+    }
+    return { refresh, refreshCount() { el.querySelector('.count').textContent = ` · ${eff(side === 'o' ? state.selO : state.selD).size} Paesi`; } };
+  }
+
+  // Con Hong Kong unita, se è selezionata Cina o Hong Kong lo sono entrambe.
+  function syncHK() {
+    [state.selO, state.selD].forEach(s => { if (s.has('CHN') || s.has('HKG')) { s.add('CHN'); s.add('HKG'); } });
+  }
+
+  /* =============================================================== URL */
+  const defaults = () => ({ others: true, hk: false, hideCC: false, threshold: CONFIG.defaultThreshold });
+  function readUrl() {
+    const p = new URLSearchParams(location.search);
+    const valid = c => COUNTRIES[c];
+    const parse = s => new Set((s || '').split(',').map(x => x.trim().toUpperCase()).filter(valid));
+    if (p.get('altri') === '0') state.others = false;
+    if (p.get('hk') === '1') state.hk = true;
+    if (p.get('cc') === '0') state.hideCC = true;
+    if (p.has('soglia')) {
+      const v = parseFloat(p.get('soglia').replace(',', '.'));
+      if (isFinite(v)) state.threshold = Math.max(0, Math.min(10, v));
+    }
+    setDefaultSelection();
+    if (p.has('da')) { state.selO = parse(p.get('da')); state.defaultSel = false; }
+    if (p.has('a')) { state.selD = parse(p.get('a')); state.defaultSel = false; }
+    if (state.hk) syncHK();
+  }
+  function writeUrl() {
+    const p = new URLSearchParams(location.search);
+    ['da', 'a', 'altri', 'hk', 'cc', 'soglia'].forEach(k => p.delete(k));
+    const order = (set, rank) => rank.filter(c => set.has(c)).concat([...set].filter(c => !rank.includes(c)));
+    if (!state.defaultSel) {
+      const b = base();
+      p.set('da', order(state.selO, b.rankO).join(','));
+      p.set('a', order(state.selD, b.rankD).join(','));
+    }
+    if (!state.others) p.set('altri', '0');
+    if (state.hk) p.set('hk', '1');
+    if (state.hideCC) p.set('cc', '0');
+    if (state.threshold !== CONFIG.defaultThreshold) p.set('soglia', String(state.threshold));
+    const qs = p.toString().replace(/%2C/g, ',');
+    try { history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash); } catch (e) { /* sandbox */ }
+  }
+
+  /* ========================================================== CONTROLLI */
+  let pickers;
+  function syncControls() {
+    document.getElementById('optOthers').checked = state.others;
+    document.getElementById('optHK').checked = state.hk;
+    document.getElementById('optCC').checked = state.hideCC;
+    document.getElementById('optThr').value = state.threshold;
+    document.getElementById('optThr').setAttribute('aria-valuetext', nf1.format(state.threshold) + ' miliardi di dollari');
+  }
+  function changed(fromList) {
+    if (state.defaultSel) setDefaultSelection();
+    writeUrl();
+    syncControls();
+    if (fromList) pickers.forEach(p => p.refreshCount()); else pickers.forEach(p => p.refresh());
+    render(true);
+  }
+
+  function initControls() {
+    pickers = [buildPicker(document.getElementById('pickO'), 'o'), buildPicker(document.getElementById('pickD'), 'd')];
+    document.getElementById('optOthers').addEventListener('change', e => { state.others = e.target.checked; changed(); });
+    document.getElementById('optHK').addEventListener('change', e => { state.hk = e.target.checked; if (state.hk) syncHK(); changed(); });
+    document.getElementById('optCC').addEventListener('change', e => { state.hideCC = e.target.checked; changed(); });
+    let raf = 0;
+    document.getElementById('optThr').addEventListener('input', e => {
+      state.threshold = +e.target.value;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => changed(true));
+    });
+    document.getElementById('btnReset').addEventListener('click', () => {
+      Object.assign(state, defaults(), { pinned: null, hover: null, hoverLink: null });
+      setDefaultSelection();
+      document.querySelectorAll('.search').forEach(s => { s.value = ''; });
+      changed();
+    });
+    document.getElementById('btnCopy').addEventListener('click', async () => {
+      const url = location.href;
+      const msg = document.getElementById('copied');
+      try { await navigator.clipboard.writeText(url); msg.textContent = 'Link copiato'; }
+      catch (e) { msg.textContent = url; }
+      setTimeout(() => { msg.textContent = ''; }, 2500);
+    });
+    const ft = document.getElementById('filterToggle');
+    const fp = document.getElementById('filterPanel');
+    function setFilterPanel() {
+      if (narrow) fp.hidden = ft.getAttribute('aria-expanded') !== 'true';
+      else fp.hidden = false;
+    }
+    ft.addEventListener('click', () => {
+      ft.setAttribute('aria-expanded', String(ft.getAttribute('aria-expanded') !== 'true'));
+      setFilterPanel();
+      postHeight();
+    });
+    setFilterPanel();
+    return setFilterPanel;
+  }
+
+  /* ========================================================== AVVIO */
+  async function start() {
+    initSvg();
+    try {
+      const res = await fetch(CONFIG.dataUrl);
+      DATA = await res.json();
+    } catch (err) {
+      chartEl.innerHTML = '<p class="empty-msg">Impossibile caricare i dati.</p>';
+      return;
+    }
+    COUNTRIES = DATA.countries;
+    readUrl();
+    const setFilterPanel = initControls();
+    syncControls();
+    pickers.forEach(p => p.refresh());
+    writeUrl();
+    try { await document.fonts.ready; } catch (e) { /* ok */ }
+    render(false);
+
+    // Ridisegno al ridimensionamento, con debounce
+    let timer = 0, lastW = chartEl.clientWidth;
+    new ResizeObserver(() => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        const w = chartEl.clientWidth;
+        const wasNarrow = narrow;
+        narrow = window.innerWidth < CONFIG.narrowBreakpoint;
+        if (wasNarrow !== narrow) {
+          setFilterPanel();
+          if (state.defaultSel) setDefaultSelection();
+          pickers.forEach(p => p.refresh());
+          writeUrl();
+        } else if (Math.abs(w - lastW) < 1) return;
+        lastW = w;
+        render(false);
+      }, 150);
+    }).observe(chartEl);
+  }
+  start();
+
+  // Per i test automatici
+  window.__chip = { state, base, buildGraph: () => current, render };
+})();
+</script>
+</body>
+</html>

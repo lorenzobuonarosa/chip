@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prova di incorporamento</title>
+<style>
+  body { font-family: Inter, Arial, sans-serif; max-width: 760px; margin: 24px auto; padding: 0 16px; background: #fff; color: #1a1a1a; }
+  body.dark { background: #121212; color: #f2f2f2; }
+  button { font: inherit; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<p>Pagina di prova: simula l'articolo di QN che ospita il grafico.</p>
+<button type="button" id="toggleTheme">Cambia tema del sito</button>
+
+<!-- ============ INIZIO SNIPPET DA INCOLLARE NEL CMS ============ -->
+<iframe
+  id="qn-chip-sankey"
+  src="https://lorenzobuonarosa.github.io/chip/"
+  title="Taiwan vende, la Cina compra: importazioni di circuiti integrati nel 2025"
+  style="width:100%;height:760px;border:0;display:block;"
+  scrolling="no"
+  loading="lazy"
+  allow="clipboard-write"></iframe>
+<script>
+(function () {
+  var iframe = document.getElementById('qn-chip-sankey');
+  var ORIGIN = 'https://lorenzobuonarosa.github.io';
+  // Per la prova in locale accetta anche la stessa origine della pagina
+  var allowed = [ORIGIN, location.origin];
+
+  function siteTheme() {
+    // ADATTARE: come il sito di QN sa se è in tema scuro
+    return document.body.classList.contains('dark') ? 'dark' : 'light';
+  }
+  function sendTheme() {
+    if (iframe.contentWindow) {
+      iframe.contentWindow.postMessage({ type: 'theme', value: siteTheme() }, '*');
+    }
+  }
+  window.addEventListener('message', function (e) {
+    if (e.source !== iframe.contentWindow || allowed.indexOf(e.origin) === -1) return;
+    var d = e.data || {};
+    if (d.type === 'resize' && d.height) iframe.style.height = d.height + 'px';
+    if (d.type === 'ready') sendTheme();
+  });
+  iframe.addEventListener('load', sendTheme);
+  // Da chiamare quando il lettore cambia tema sul sito:
+  window.qnChipSetTheme = sendTheme;
+})();
+</script>
+<!-- ============ FINE SNIPPET ============ -->
+
+<script>
+  // Solo per la prova: in locale l'iframe punta alla copia nella stessa cartella.
+  if (location.hostname === 'localhost' || location.protocol === 'file:') {
+    document.getElementById('qn-chip-sankey').src = 'index.html';
+  }
+  document.getElementById('toggleTheme').addEventListener('click', function () {
+    document.body.classList.toggle('dark');
+    window.qnChipSetTheme();
+  });
+</script>
+</body>
+</html>
