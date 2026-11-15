@@ -170,6 +170,7 @@
   .slider { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; white-space: nowrap; }
   .slider input[type=range] { width: 140px; accent-color: var(--text); }
   .slider output { min-width: 7.5em; color: var(--text-2); }
+  .slider input[type=range]:disabled { opacity: .4; cursor: not-allowed; }
   .actions { display: inline-flex; gap: 6px; margin-left: auto; }
 
   /* ---------------------------------------------------------------- GRAFICO */
@@ -244,7 +245,9 @@
     .sub { font-size: 14px; }
     .pickers { grid-template-columns: 1fr; gap: 8px; }
     .options { flex-direction: column; align-items: flex-start; }
-    .slider input[type=range] { width: 160px; }
+    .slider { width: 100%; }
+    .slider input[type=range] { flex: 1 1 auto; width: auto; min-width: 0; }
+    .slider output { min-width: 0; }
     .actions { margin-left: 0; }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -372,7 +375,7 @@
   let DATA, COUNTRIES;
   const state = {
     selO: new Set(), selD: new Set(),
-    defaultSel: true,         // la selezione segue ancora i "primi N"
+    defO: true, defD: true,   // il lato segue ancora la selezione automatica (primi N)
     others: true, hk: false, hideCC: false,
     threshold: CONFIG.defaultThreshold,
     hover: null, pinned: null, hoverLink: null
@@ -424,23 +427,49 @@
     return s;
   }
 
+  // Partner di un singolo Paese, ordinati per valore. side = lato del Paese.
+  function partnersOf(code, side) {
+    const m = new Map();
+    for (const f of base().flows) {
+      if (side === 'o' && f.o === code) m.set(f.d, (m.get(f.d) || 0) + f.v);
+      if (side === 'd' && f.d === code) m.set(f.o, (m.get(f.o) || 0) + f.v);
+    }
+    return [...m].filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]).map(x => x[0]);
+  }
+  // Un lato con un solo Paese scelto dall'utente: si mostra solo quello.
+  const singleSide = side => !(side === 'o' ? state.defO : state.defD) && eff(side === 'o' ? state.selO : state.selD).size === 1;
+
+  // Riempie i lati ancora "automatici": i primi N del mondo oppure, se l'altro
+  // lato ha un solo Paese, i primi N partner di quel Paese.
+  function applyDefaults() {
+    const b = base(), n = topN();
+    if (state.defO) {
+      state.selO = new Set(singleSide('d') ? partnersOf([...eff(state.selD)][0], 'd').slice(0, n) : b.rankO.slice(0, n));
+    }
+    if (state.defD) {
+      state.selD = new Set(singleSide('o') ? partnersOf([...eff(state.selO)][0], 'o').slice(0, n) : b.rankD.slice(0, n));
+    }
+    if (state.hk) syncHK();
+  }
   function setDefaultSelection() {
-    const b = base();
-    state.selO = new Set(b.rankO.slice(0, topN()));
-    state.selD = new Set(b.rankD.slice(0, topN()));
-    state.defaultSel = true;
+    state.defO = true; state.defD = true;
+    applyDefaults();
   }
 
   /* ========================================================== GRAFO SANKEY */
   function buildGraph() {
     const b = base();
     const sO = eff(state.selO), sD = eff(state.selD);
-    const thr = state.threshold * 1e9;
+    const oneO = singleSide('o'), oneD = singleSide('d');
+    const single = oneO || oneD;
+    // con un solo Paese su un lato: niente «Altri Paesi» su quel lato e nessuna soglia
+    const thr = single ? 0 : state.threshold * 1e9;
+    const othO = state.others && !oneO, othD = state.others && !oneD;
     const agg = new Map();
     let nonSelected = 0, below = 0;
     for (const f of b.flows) {
-      const o = sO.has(f.o) ? f.o : (state.others ? OTH : null);
-      const d = sD.has(f.d) ? f.d : (state.others ? OTH : null);
+      const o = sO.has(f.o) ? f.o : (othO ? OTH : null);
+      const d = sD.has(f.d) ? f.d : (othD ? OTH : null);
       if (!o || !d) { nonSelected += f.v; continue; }
       const k = o + '|' + d;
       agg.set(k, (agg.get(k) || 0) + f.v);
@@ -458,7 +487,14 @@
       return { id, side, code, name: nameOf(code), isOther: code === OTH };
     });
     const shown = links.reduce((s, l) => s + l.value, 0);
-    return { nodes, links, nonSelected, below, shown, total: b.total, sO, sD };
+    // totale del Paese singolo (solo se l'altro lato non è anch'esso un singolo Paese)
+    let singleName = null, singleTotal = 0;
+    if (oneO !== oneD) {
+      const code = [...(oneO ? sO : sD)][0];
+      singleName = nameOf(code);
+      singleTotal = (oneO ? b.byO : b.byD).get(code) || 0;
+    }
+    return { nodes, links, nonSelected, below, shown, total: b.total, sO, sD, single, singleName, singleTotal };
   }
 
   /* ======================================================== MISURA TESTO */
@@ -520,7 +556,11 @@
     const empty = chartEl.querySelector('.empty-msg');
     if (!g.links.length) {
       svg.style('display', 'none');
-      if (!empty) chartEl.insertAdjacentHTML('beforeend', '<p class="empty-msg">Nessun flusso da mostrare con questa selezione. Prova ad abbassare la soglia o a mostrare «Altri Paesi».</p>');
+      let msg = 'Nessun flusso da mostrare con questa selezione. Prova ad abbassare la soglia o a mostrare «Altri Paesi».';
+      const oneD = singleSide('d') && [...eff(state.selD)][0];
+      if (oneD && !(base().byD.get(oneD) > 0)) msg = `${esc(nameOf(oneD))} non risulta tra i Paesi che dichiarano importazioni nel 2025: si vede solo come Paese che vende.`;
+      if (empty) empty.remove();
+      chartEl.insertAdjacentHTML('beforeend', `<p class="empty-msg">${msg}</p>`);
       updateTexts(g);
       updatePanel();
       return;
@@ -694,9 +734,24 @@
     document.getElementById('thrOut').textContent = nf1.format(state.threshold) + ' mld $';
     const ex = document.getElementById('excluded');
     const parts = [];
-    parts.push(`Flussi sotto la soglia di ${nf1.format(state.threshold)} miliardi esclusi dal grafico: <b>${bn(g.below)} miliardi di dollari</b> (${pct(g.below, g.total)} del totale).`);
-    if (!state.others && g.nonSelected > 0) parts.push(`Scambi con Paesi non selezionati, non mostrati: <b>${bn(g.nonSelected)} miliardi</b> (${pct(g.nonSelected, g.total)}).`);
-    parts.push(`Nel grafico: ${bn(g.shown)} miliardi su ${bn(g.total)}${state.hideCC ? ' (escluso il flusso Cina → Cina)' : ''}.`);
+    const thrInput = document.getElementById('optThr');
+    thrInput.disabled = g.single;
+    if (g.single) {
+      document.getElementById('thrOut').textContent = 'non applicata';
+      parts.push('Con un solo Paese selezionato la soglia non si applica.');
+      const cc = state.hideCC ? ', escluso il flusso Cina → Cina' : '';
+      if (g.singleName && g.shown < g.singleTotal - 5e7) {
+        parts.push(`Nel grafico: <b>${bn(g.shown)} miliardi di dollari</b> su un totale di ${bn(g.singleTotal)} per il Paese scelto, ${esc(g.singleName)}${cc}; gli scambi con i Paesi non selezionati non sono mostrati.`);
+      } else if (g.singleName) {
+        parts.push(`Il grafico mostra tutti i flussi del Paese scelto, ${esc(g.singleName)}: <b>${bn(g.shown)} miliardi di dollari</b> (${pct(g.shown, g.total)} del totale mondiale${cc}).`);
+      } else {
+        parts.push(`Nel grafico: <b>${bn(g.shown)} miliardi di dollari</b>.`);
+      }
+    } else {
+      parts.push(`Flussi sotto la soglia di ${nf1.format(state.threshold)} miliardi esclusi dal grafico: <b>${bn(g.below)} miliardi di dollari</b> (${pct(g.below, g.total)} del totale).`);
+      if (!state.others && g.nonSelected > 0) parts.push(`Scambi con Paesi non selezionati, non mostrati: <b>${bn(g.nonSelected)} miliardi</b> (${pct(g.nonSelected, g.total)}).`);
+      parts.push(`Nel grafico: ${bn(g.shown)} miliardi su ${bn(g.total)}${state.hideCC ? ' (escluso il flusso Cina → Cina)' : ''}.`);
+    }
     ex.innerHTML = parts.join(' ');
 
     // riassunto testuale per i lettori di schermo
@@ -878,9 +933,9 @@
       const b = base();
       const rank = side === 'o' ? b.rankO : b.rankD;
       const act = btn.dataset.act;
-      const sel = act === 'top' ? new Set(rank.slice(0, topN())) : act === 'all' ? new Set(rank) : new Set();
-      if (side === 'o') state.selO = sel; else state.selD = sel;
-      state.defaultSel = false;
+      const auto = act === 'top';   // «Primi N» torna alla selezione automatica del lato
+      const sel = act === 'all' ? new Set(rank) : new Set();
+      if (side === 'o') { state.selO = sel; state.defO = auto; } else { state.selD = sel; state.defD = auto; }
       if (state.hk) syncHK();
       changed();
     }));
@@ -890,7 +945,7 @@
       const set = side === 'o' ? state.selO : state.selD;
       const codes = cb.value === 'CHN' && state.hk ? ['CHN', 'HKG'] : [cb.value];
       codes.forEach(c => cb.checked ? set.add(c) : set.delete(c));
-      state.defaultSel = false;
+      if (side === 'o') state.defO = false; else state.defD = false;
       changed(true);
     });
 
@@ -909,13 +964,17 @@
         : '<li class="empty">Nessun Paese trovato</li>';
     }
     function refresh() {
-      el.querySelector('.count').textContent = ` · ${eff(side === 'o' ? state.selO : state.selD).size} Paesi`;
+      el.querySelector('.count').textContent = countLabel(side);
       el.querySelector('[data-act=top]').textContent = `Primi ${topN()}`;
       fillList();
     }
-    return { refresh, refreshCount() { el.querySelector('.count').textContent = ` · ${eff(side === 'o' ? state.selO : state.selD).size} Paesi`; } };
+    return { refresh, refreshCount() { el.querySelector('.count').textContent = countLabel(side); } };
   }
 
+  function countLabel(side) {
+    const n = eff(side === 'o' ? state.selO : state.selD).size;
+    return ` · ${n} ${n === 1 ? 'Paese' : 'Paesi'}`;
+  }
   // Con Hong Kong unita, se è selezionata Cina o Hong Kong lo sono entrambe.
   function syncHK() {
     [state.selO, state.selD].forEach(s => { if (s.has('CHN') || s.has('HKG')) { s.add('CHN'); s.add('HKG'); } });
@@ -935,19 +994,18 @@
       if (isFinite(v)) state.threshold = Math.max(0, Math.min(10, v));
     }
     setDefaultSelection();
-    if (p.has('da')) { state.selO = parse(p.get('da')); state.defaultSel = false; }
-    if (p.has('a')) { state.selD = parse(p.get('a')); state.defaultSel = false; }
+    if (p.has('da')) { state.selO = parse(p.get('da')); state.defO = false; }
+    if (p.has('a')) { state.selD = parse(p.get('a')); state.defD = false; }
     if (state.hk) syncHK();
+    applyDefaults();
   }
   function writeUrl() {
     const p = new URLSearchParams(location.search);
     ['da', 'a', 'altri', 'hk', 'cc', 'soglia'].forEach(k => p.delete(k));
     const order = (set, rank) => rank.filter(c => set.has(c)).concat([...set].filter(c => !rank.includes(c)));
-    if (!state.defaultSel) {
-      const b = base();
-      p.set('da', order(state.selO, b.rankO).join(','));
-      p.set('a', order(state.selD, b.rankD).join(','));
-    }
+    const b = base();
+    if (!state.defO) p.set('da', order(state.selO, b.rankO).join(','));
+    if (!state.defD) p.set('a', order(state.selD, b.rankD).join(','));
     if (!state.others) p.set('altri', '0');
     if (state.hk) p.set('hk', '1');
     if (state.hideCC) p.set('cc', '0');
@@ -966,7 +1024,7 @@
     document.getElementById('optThr').setAttribute('aria-valuetext', nf1.format(state.threshold) + ' miliardi di dollari');
   }
   function changed(fromList) {
-    if (state.defaultSel) setDefaultSelection();
+    applyDefaults();
     writeUrl();
     syncControls();
     if (fromList) pickers.forEach(p => p.refreshCount()); else pickers.forEach(p => p.refresh());
@@ -1020,7 +1078,7 @@
         const wasNarrow = narrow;
         narrow = window.innerWidth < CONFIG.narrowBreakpoint;
         if (wasNarrow !== narrow) {
-          if (state.defaultSel) setDefaultSelection();
+          applyDefaults();
           pickers.forEach(p => p.refresh());
           writeUrl();
         } else if (Math.abs(w - lastW) < 1) return;
