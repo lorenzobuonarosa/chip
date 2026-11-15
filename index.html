@@ -87,7 +87,7 @@
     color-scheme: dark;
   }
   /* Sfondo scuro trasparente (?bg=transparent o postMessage {background:"transparent"}) */
-  :root[data-theme="dark"][data-bg="transparent"] { --bg: transparent; color-scheme: normal; }
+  :root[data-theme="dark"][data-bg="transparent"] { --bg: transparent; color-scheme: normal; --fade: transparent; }
 
   /* ------------------------------------------------------------------ BASE */
   *, *::before, *::after { box-sizing: border-box; }
@@ -181,6 +181,30 @@
   }
   .chart { position: relative; width: 100%; }
   .chart svg { display: block; width: 100%; overflow: visible; }
+
+  /* Scorrimento orizzontale sotto i 450 px */
+  .chart-wrap { position: relative; }
+  .chart.scroll {
+    overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  .chart.scroll::-webkit-scrollbar { display: none; }
+  .chart.scroll svg { overflow: hidden; }
+  .fade { position: absolute; top: 0; bottom: 0; width: 32px; pointer-events: none; opacity: 0; transition: opacity .2s; }
+  .fade-l { left: 0; background: linear-gradient(to right, var(--fade, var(--bg)), transparent); }
+  .fade-r { right: 0; background: linear-gradient(to left, var(--fade, var(--bg)), transparent); }
+  .chart-wrap.can-l .fade-l, .chart-wrap.can-r .fade-r { opacity: 1; }
+  .scroll-nav { display: flex; align-items: center; gap: 10px; margin: 4px 0 8px; }
+  .scroll-nav[hidden] { display: none; }
+  .scroll-nav button {
+    appearance: none; border: 0; background: none; padding: 4px 0; cursor: pointer; flex: none;
+    font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--text-2);
+  }
+  .scroll-nav button[aria-current="true"] { color: var(--text); }
+  .scroll-track { flex: 1; height: 3px; border-radius: 2px; background: var(--grid); position: relative; overflow: hidden; }
+  .scroll-thumb { position: absolute; top: 0; bottom: 0; left: 0; width: 50%; border-radius: 2px; background: var(--text-2); }
+  .scroll-hint { font-size: 12px; color: var(--text-2); margin: 6px 0 0; text-align: center; }
+  .scroll-hint[hidden], .col-heads[hidden] { display: none; }
   .empty-msg { padding: 60px 0; text-align: center; color: var(--text-2); }
 
   .link { fill: none; stroke-opacity: var(--link-op); transition: stroke-opacity .15s; cursor: pointer; }
@@ -285,8 +309,18 @@
   </section>
 
   <figure aria-labelledby="title">
-    <div class="col-heads" aria-hidden="true"><span>Chi vende</span><span>Chi compra</span></div>
-    <div class="chart" id="chart"></div>
+    <div class="col-heads" id="colHeads" aria-hidden="true"><span>Chi vende</span><span>Chi compra</span></div>
+    <div class="scroll-nav" id="scrollNav" hidden>
+      <button type="button" data-to="start" aria-current="true">← Chi vende</button>
+      <span class="scroll-track" aria-hidden="true"><span class="scroll-thumb" id="scrollThumb"></span></span>
+      <button type="button" data-to="end" aria-current="false">Chi compra →</button>
+    </div>
+    <div class="chart-wrap" id="chartWrap">
+      <div class="chart" id="chart"></div>
+      <div class="fade fade-l" aria-hidden="true"></div>
+      <div class="fade fade-r" aria-hidden="true"></div>
+    </div>
+    <p class="scroll-hint" id="scrollHint" hidden>Scorri il grafico di lato per vedere chi compra</p>
     <p id="summary" class="sr-only"></p>
     <section class="panel" id="panel" hidden aria-live="polite" aria-label="Dettagli del Paese selezionato"></section>
   </figure>
@@ -319,6 +353,8 @@
   const CONFIG = {
     dataUrl: 'data.json',
     narrowBreakpoint: 600,
+    scrollBreakpoint: 450,        // sotto questa larghezza il grafico scorre di lato
+    scrollWidth: 680,             // larghezza del grafico in modalità scorrimento
     topWide: 10,
     topNarrow: 8,
     defaultThreshold: 1,          // miliardi di dollari
@@ -545,12 +581,53 @@
     gLabels = svg.append('g').attr('class', 'labels').attr('aria-hidden', 'true');
   }
 
+  /* ======================================================= SCORRIMENTO */
+  const chartWrap = document.getElementById('chartWrap');
+  const scrollNav = document.getElementById('scrollNav');
+  const scrollThumb = document.getElementById('scrollThumb');
+  let inScroll = false;
+  function setScrollMode(on) {
+    if (on !== inScroll) {
+      inScroll = on;
+      chartEl.classList.toggle('scroll', on);
+      scrollNav.hidden = !on;
+      document.getElementById('colHeads').hidden = on;
+      document.getElementById('scrollHint').hidden = !on;
+      if (!on) chartEl.scrollLeft = 0;
+    }
+    requestAnimationFrame(updateScrollUI);
+  }
+  function updateScrollUI() {
+    const max = chartEl.scrollWidth - chartEl.clientWidth;
+    const x = chartEl.scrollLeft;
+    chartWrap.classList.toggle('can-l', inScroll && x > 4);
+    chartWrap.classList.toggle('can-r', inScroll && x < max - 4);
+    if (!inScroll || max <= 0) return;
+    const frac = chartEl.clientWidth / chartEl.scrollWidth;
+    scrollThumb.style.width = (frac * 100) + '%';
+    scrollThumb.style.left = ((x / max) * (1 - frac) * 100) + '%';
+    const atEnd = x > max / 2;
+    scrollNav.querySelector('[data-to=start]').setAttribute('aria-current', String(!atEnd));
+    scrollNav.querySelector('[data-to=end]').setAttribute('aria-current', String(atEnd));
+    if (x > 20) document.getElementById('scrollHint').hidden = true;   // l'utente ha capito
+  }
+  chartEl.addEventListener('scroll', () => { hideTip(); updateScrollUI(); }, { passive: true });
+  scrollNav.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-to]');
+    if (!btn) return;
+    const left = btn.dataset.to === 'end' ? chartEl.scrollWidth : 0;
+    chartEl.scrollTo({ left, behavior: reduceMotionMQ.matches ? 'auto' : 'smooth' });
+  });
+
   function render(animate) {
     const g = buildGraph();
     current = g;
-    const width = Math.max(280, chartEl.clientWidth);
     narrow = window.innerWidth < CONFIG.narrowBreakpoint;
-    chartEl.classList.toggle('narrow', narrow);
+    const scrollMode = window.innerWidth < CONFIG.scrollBreakpoint;
+    const compact = narrow && !scrollMode;   // etichette compatte solo tra 450 e 600 px
+    const width = scrollMode ? CONFIG.scrollWidth : Math.max(280, chartEl.clientWidth);
+    chartEl.classList.toggle('narrow', compact);
+    setScrollMode(scrollMode);
     const dur = animate && !reduceMotionMQ.matches ? CONFIG.transitionMs : 0;
 
     const empty = chartEl.querySelector('.empty-msg');
@@ -569,9 +646,10 @@
     svg.style('display', null);
 
     // --- etichette e margini
-    const fs = narrow ? 11 : 12, lh = narrow ? 14 : 16, gap = 6, leader = 6;
-    const nodeW = narrow ? 8 : 10;
-    const maxSide = width * (narrow ? 0.33 : 0.28);
+    const fs = compact ? 11 : 12, lh = compact ? 14 : 16, gap = 6, leader = 6;
+    const pad = scrollMode ? 12 : 4;   // margine di sicurezza: in scorrimento il bordo taglia
+    const nodeW = compact ? 8 : 10;
+    const maxSide = width * (compact ? 0.33 : 0.28);
     const valueOf = n => g.links.reduce((s, l) => s + (l.source === n.id || l.target === n.id ? l.value : 0), 0);
     g.nodes.forEach(n => { n.total = valueOf(n); n.vtxt = nf1.format(n.total / 1e9); });
     function sideMargin(side) {
@@ -589,24 +667,25 @@
       const vW = textW(' ' + n.vtxt, 400, fs);
       const nameW = textW(n.name, 600, fs);
       if (nameW + vW <= space) { n.lname = n.name; n.lval = ' ' + n.vtxt; }
-      else if (narrow) { n.lname = truncate(n.name, space, 600, fs); n.lval = ''; }          // il valore va nel tooltip
+      else if (compact) { n.lname = truncate(n.name, space, 600, fs); n.lval = ''; }          // il valore va nel tooltip
       else { n.lname = truncate(n.name, space - vW, 600, fs); n.lval = ' ' + n.vtxt; }
     });
 
     // --- altezza
     const nL = g.nodes.filter(n => n.side === 'o').length;
     const nR = g.nodes.filter(n => n.side === 'd').length;
-    const baseH = narrow ? 440 : 520;
+    const baseH = scrollMode ? 480 : narrow ? 440 : 520;
     const height = Math.round(Math.min(1800, Math.max(baseH, Math.max(nL, nR) * (lh + 4) + 20)));
-    svg.attr('viewBox', `0 0 ${width} ${height}`).attr('height', height);
+    svg.attr('viewBox', `0 0 ${width} ${height}`).attr('height', height)
+      .style('width', scrollMode ? width + 'px' : null);
 
     const sankey = d3.sankey()
       .nodeId(d => d.id)
       .nodeAlign(d3.sankeyJustify)
       .nodeWidth(nodeW)
-      .nodePadding(narrow ? 6 : 8)
+      .nodePadding(compact ? 6 : 8)
       .nodeSort((a, b) => (a.isOther - b.isOther) || (b.value - a.value))
-      .extent([[mL, 2], [width - mR, height - 2]]);
+      .extent([[mL + pad, 2], [width - mR - pad, height - 2]]);
     const graph = sankey({
       nodes: g.nodes.map(d => Object.assign({}, d)),
       links: g.links.map(d => Object.assign({}, d))
@@ -635,9 +714,9 @@
     nodeEnter.append('rect')
       .attr('x', d => d.x0).attr('y', d => d.y0)
       .attr('width', d => d.x1 - d.x0).attr('height', d => Math.max(1, d.y1 - d.y0));
-    nodeEnter.on('pointerenter', (e, d) => { state.hover = d.id; highlight(); showNodeTip(e, d); })
+    nodeEnter.on('pointerenter', (e, d) => { if (e.pointerType === 'touch') return; state.hover = d.id; highlight(); showNodeTip(e, d); })
       .on('pointermove', (e, d) => { if (e.pointerType === 'mouse') showNodeTip(e, d); })
-      .on('pointerleave', () => { state.hover = null; highlight(); hideTip(); })
+      .on('pointerleave', e => { if (e.pointerType === 'touch') return; state.hover = null; highlight(); hideTip(); })
       .on('click', (e, d) => { e.stopPropagation(); togglePin(d.id); if (lastPointer === 'touch') showNodeTip(e, d); })
       .on('focus', (e, d) => { state.hover = d.id; highlight(); showNodeTip(null, d, e.currentTarget); })
       .on('blur', () => { state.hover = null; highlight(); hideTip(); })
@@ -662,10 +741,10 @@
       .attr('d', pathGen)
       .attr('stroke-width', d => Math.max(1, d.width))
       .style('opacity', 0);
-    linkEnter.on('pointerenter', (e, d) => { state.hoverLink = d.id; highlight(); showLinkTip(e, d); })
+    linkEnter.on('pointerenter', (e, d) => { if (e.pointerType === 'touch') return; state.hoverLink = d.id; highlight(); showLinkTip(e, d); })
       .on('pointermove', (e, d) => showLinkTip(e, d))
-      .on('pointerleave', () => { state.hoverLink = null; highlight(); if (lastPointer !== 'touch') hideTip(); })
-      .on('click', (e, d) => { e.stopPropagation(); showLinkTip(e, d); })
+      .on('pointerleave', e => { if (e.pointerType === 'touch') return; state.hoverLink = null; highlight(); hideTip(); })
+      .on('click', (e, d) => { e.stopPropagation(); if (lastPointer === 'touch') { state.hoverLink = d.id; highlight(); } showLinkTip(e, d); })
       .on('focus', (e, d) => { state.hoverLink = d.id; highlight(); showLinkTip(null, d, e.currentTarget); })
       .on('blur', () => { state.hoverLink = null; highlight(); hideTip(); });
     const linkAll = linkEnter.merge(linkSel);
