@@ -122,9 +122,6 @@
   .btn-ghost { border-color: transparent; background: transparent; padding: 5px 6px; color: var(--text-2); }
   .btn-ghost:hover { color: var(--text); }
 
-  .filter-toggle { display: none; width: 100%; justify-content: space-between; align-items: center; }
-  .filter-toggle .chev { transition: transform .2s; }
-  .filter-toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
 
   .controls { border-top: 1px solid var(--grid); border-bottom: 1px solid var(--grid); padding: 10px 0; margin-bottom: 10px; }
   .pickers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -239,23 +236,16 @@
   .method summary { cursor: pointer; font-weight: 600; color: var(--text); margin-bottom: 4px; }
   .method ol { margin: 4px 0 0; padding-left: 18px; }
   .method li { margin-bottom: 4px; }
-  .copied { font-size: 12px; color: var(--text-2); }
 
   /* --------------------------------------------------------------- MOBILE */
   @media (max-width: 599.98px) {
     #app { padding: 12px 16px 10px; }
     h1 { font-size: 20px; }
     .sub { font-size: 14px; }
-    .filter-toggle { display: flex; }
-    .filter-panel { margin-top: 10px; }
-    .filter-panel[hidden] { display: none; }
     .pickers { grid-template-columns: 1fr; gap: 8px; }
     .options { flex-direction: column; align-items: flex-start; }
     .slider input[type=range] { width: 160px; }
     .actions { margin-left: 0; }
-  }
-  @media (min-width: 600px) {
-    .filter-panel[hidden] { display: block; } /* su desktop i filtri sono sempre visibili */
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition: none !important; }
@@ -270,10 +260,6 @@
   </header>
 
   <section class="controls" aria-label="Filtri del grafico">
-    <button type="button" class="btn filter-toggle" id="filterToggle" aria-expanded="false" aria-controls="filterPanel">
-      <span>Filtra Paesi <span class="count" id="filterSummary"></span></span>
-      <svg class="chev" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
-    </button>
     <div class="filter-panel" id="filterPanel">
       <div class="pickers">
         <div class="picker" id="pickO"></div>
@@ -290,8 +276,6 @@
         </span>
         <span class="actions">
           <button type="button" class="btn" id="btnReset">Ripristina</button>
-          <button type="button" class="btn btn-ghost" id="btnCopy">Copia link</button>
-          <span class="copied" id="copied" role="status" aria-live="polite"></span>
         </span>
       </div>
     </div>
@@ -725,9 +709,6 @@
       `per ${bnLong(g.shown)}, il ${pct(g.shown, g.total)} delle importazioni mondiali di circuiti integrati nel 2025. ` +
       `Il primo venditore nel grafico è ${L[0].name} con ${bn(L[0].value)} miliardi, il primo acquirente è ${R[0].name} con ${bn(R[0].value)} miliardi. ` +
       `Il flusso maggiore è ${linkText(top)}.`;
-
-    document.getElementById('filterSummary').textContent =
-      `(${eff(state.selO).size} → ${eff(state.selD).size})`;
   }
 
   /* ============================================================ TOOLTIP */
@@ -1009,26 +990,6 @@
       document.querySelectorAll('.search').forEach(s => { s.value = ''; });
       changed();
     });
-    document.getElementById('btnCopy').addEventListener('click', async () => {
-      const url = location.href;
-      const msg = document.getElementById('copied');
-      try { await navigator.clipboard.writeText(url); msg.textContent = 'Link copiato'; }
-      catch (e) { msg.textContent = url; }
-      setTimeout(() => { msg.textContent = ''; }, 2500);
-    });
-    const ft = document.getElementById('filterToggle');
-    const fp = document.getElementById('filterPanel');
-    function setFilterPanel() {
-      if (narrow) fp.hidden = ft.getAttribute('aria-expanded') !== 'true';
-      else fp.hidden = false;
-    }
-    ft.addEventListener('click', () => {
-      ft.setAttribute('aria-expanded', String(ft.getAttribute('aria-expanded') !== 'true'));
-      setFilterPanel();
-      postHeight();
-    });
-    setFilterPanel();
-    return setFilterPanel;
   }
 
   /* ========================================================== AVVIO */
@@ -1043,7 +1004,7 @@
     }
     COUNTRIES = DATA.countries;
     readUrl();
-    const setFilterPanel = initControls();
+    initControls();
     syncControls();
     pickers.forEach(p => p.refresh());
     writeUrl();
@@ -1059,7 +1020,6 @@
         const wasNarrow = narrow;
         narrow = window.innerWidth < CONFIG.narrowBreakpoint;
         if (wasNarrow !== narrow) {
-          setFilterPanel();
           if (state.defaultSel) setDefaultSelection();
           pickers.forEach(p => p.refresh());
           writeUrl();

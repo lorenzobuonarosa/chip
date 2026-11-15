@@ -31,7 +31,7 @@ UN Comtrade, codice HS 8542 (Electronic integrated circuits), anno 2025, flussi 
 
 ## Parametri URL
 
-Tutti facoltativi; la pagina li aggiorna da sola quando il lettore cambia i filtri (pulsante «Copia link»).
+Tutti facoltativi; la pagina li aggiorna da sola quando si cambiano i filtri, quindi per preparare una vista filtrata basta aprire il grafico su GitHub Pages, scegliere i filtri e copiare l'indirizzo dalla barra del browser.
 
 | Parametro | Valori | Effetto |
 |---|---|---|
@@ -78,8 +78,7 @@ L'iframe invia alla pagina che lo contiene:
   title="Taiwan vende, la Cina compra: importazioni di circuiti integrati nel 2025"
   style="width:100%;height:760px;border:0;display:block;"
   scrolling="no"
-  loading="lazy"
-  allow="clipboard-write"></iframe>
+  loading="lazy"></iframe>
 <script>
 (function () {
   var iframe = document.getElementById('qn-chip-sankey');
