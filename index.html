@@ -185,8 +185,8 @@
   /* Scorrimento orizzontale sotto i 550 px */
   .chart-wrap { position: relative; }
   .chart.scroll {
-    overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain;
-    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    /* lo scorrimento orizzontale è gestito dallo script: scatto netto tra i due lati */
+    overflow-x: hidden; overflow-y: hidden; touch-action: pan-y; scrollbar-width: none;
   }
   .chart.scroll::-webkit-scrollbar { display: none; }
   .chart.scroll svg { overflow: hidden; }
@@ -612,12 +612,53 @@
     if (x > 20) document.getElementById('scrollHint').hidden = true;   // l'utente ha capito
   }
   chartEl.addEventListener('scroll', () => { hideTip(); updateScrollUI(); }, { passive: true });
+  // Scatto netto tra i due lati, come un carosello: basta un piccolo gesto.
+  function goTo(side) {
+    const left = side === 'end' ? chartEl.scrollWidth - chartEl.clientWidth : 0;
+    chartEl.scrollTo({ left, behavior: reduceMotionMQ.matches ? 'auto' : 'smooth' });
+  }
   scrollNav.addEventListener('click', e => {
     const btn = e.target.closest('button[data-to]');
-    if (!btn) return;
-    const left = btn.dataset.to === 'end' ? chartEl.scrollWidth : 0;
-    chartEl.scrollTo({ left, behavior: reduceMotionMQ.matches ? 'auto' : 'smooth' });
+    if (btn) goTo(btn.dataset.to);
   });
+  const SWIPE_MIN = 30;   // px di trascinamento oltre i quali scatta l'altro lato
+  let sw = null;
+  chartEl.addEventListener('touchstart', e => {
+    if (!inScroll || e.touches.length !== 1) return;
+    const t = e.touches[0];
+    sw = { x: t.clientX, y: t.clientY, left: chartEl.scrollLeft, dir: null };
+  }, { passive: true });
+  chartEl.addEventListener('touchmove', e => {
+    if (!sw) return;
+    const t = e.touches[0];
+    const dx = t.clientX - sw.x, dy = t.clientY - sw.y;
+    if (!sw.dir && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) sw.dir = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+    if (sw.dir === 'x') chartEl.scrollLeft = sw.left - dx;   // il grafico segue il dito
+  }, { passive: true });
+  function endSwipe(e) {
+    if (!sw) return;
+    const t = e.changedTouches && e.changedTouches[0];
+    const dx = t ? t.clientX - sw.x : 0;
+    const startAtEnd = sw.left > (chartEl.scrollWidth - chartEl.clientWidth) / 2;
+    if (sw.dir === 'x') {
+      if (dx <= -SWIPE_MIN) goTo('end');
+      else if (dx >= SWIPE_MIN) goTo('start');
+      else goTo(startAtEnd ? 'end' : 'start');   // gesto troppo piccolo: torna dov'era
+    }
+    sw = null;
+  }
+  chartEl.addEventListener('touchend', endSwipe);
+  chartEl.addEventListener('touchcancel', endSwipe);
+  // Trackpad e rotella orizzontale: un gesto = uno scatto
+  let wheelLock = 0;
+  chartEl.addEventListener('wheel', e => {
+    if (!inScroll || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+    e.preventDefault();
+    const now = Date.now();
+    if (now < wheelLock || Math.abs(e.deltaX) < 4) return;
+    wheelLock = now + 500;
+    goTo(e.deltaX > 0 ? 'end' : 'start');
+  }, { passive: false });
 
   function render(animate) {
     const g = buildGraph();
